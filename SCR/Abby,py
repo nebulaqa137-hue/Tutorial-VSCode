@@ -1,0 +1,71 @@
+import turtle
+import random
+import math
+
+# Configuración de pantalla
+screen = turtle.Screen()
+screen.setup(width=800, height=800)
+screen.bgcolor("#0a0a0a")
+screen.tracer(0) 
+
+t = turtle.Turtle()
+t.hideturtle()
+t.penup()
+
+def get_heart_point(t_val):
+    """Calcula la silueta del corazón"""
+    x = 16 * math.sin(t_val)**3
+    y = 13 * math.cos(t_val) - 5 * math.cos(2*t_val) - 2 * math.cos(3*t_val) - math.cos(4*t_val)
+    return x * 15, y * 15
+
+# Generación de 3500 granos de arena
+particles = []
+for _ in range(3500):
+    target_t = random.uniform(0, 2 * math.pi)
+    tx, ty = get_heart_point(target_t)
+    
+    # Efecto granulado
+    tx += random.uniform(-12, 12)
+    ty += random.uniform(-12, 12)
+    
+    # Aparecen más cerca para que la animación dure poco
+    particles.append({
+        'current_x': tx + random.uniform(-100, 100), 
+        'current_y': ty + random.uniform(200, 400), # Caen desde arriba pero cerca
+        'target_x': tx,
+        'target_y': ty,
+        'color': random.choice(["#FF1493", "#FF69B4", "#D81B60", "#FF007F"]),
+        'speed': random.uniform(0.15, 0.3) # VELOCIDAD AUMENTADA
+    })
+
+def draw_sand():
+    t.clear()
+    finished = True
+    
+    for p in particles:
+        dx = p['target_x'] - p['current_x']
+        dy = p['target_y'] - p['current_y']
+        
+        # Si la distancia es pequeña, los fijamos
+        if abs(dx) > 0.5 or abs(dy) > 0.5:
+            p['current_x'] += dx * p['speed']
+            p['current_y'] += dy * p['speed']
+            finished = False
+        
+        t.goto(p['current_x'], p['current_y'])
+        t.dot(3, p['color'])
+    
+    screen.update()
+    
+    if not finished:
+        screen.ontimer(draw_sand, 5) # Intervalo más corto entre frames
+    else:
+        # Mensaje final
+        t.goto(0, -50) # Lo movemos un poco más arriba para que sea el centro
+        t.color("white")
+        t.write("Te amo Abby", align="center", font=("Verdana", 45, "bold italic"))
+        screen.update()
+
+# Iniciar
+draw_sand()
+screen.mainloop()
